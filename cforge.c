@@ -15,7 +15,7 @@
 bool was_rebuilt = false;
 
 #if CF_VERSION_BELOW(1, 0, 2)
-    #error "CForge too old!"
+#error "CForge too old!"
 #endif
 
 CF_CONFIG(release) {
@@ -27,16 +27,26 @@ CF_CONFIG(release) {
 
 CF_CONFIG(debug) {
     CF_SET_ENV(mode, "debug");
-    
+
     CF_SET_ENV(cflags, "-g");
     CF_SET_ENV(includes, "-Iincludes/");
 }
 
-CF_TARGET(release, CF_WITH_CONFIG(release), CF_DEPENDS(build), CF_HELP_STRING("Build in release mode")) {
+CF_TARGET(
+    release,
+    CF_WITH_CONFIG(release),
+    CF_DEPENDS(build),
+    CF_HELP_STRING("Build in release mode")
+) {
     CF_NOP();
 }
 
-CF_TARGET(debug, CF_WITH_CONFIG(debug), CF_DEPENDS(build), CF_HELP_STRING("Build in debug mode")) {
+CF_TARGET(
+    debug,
+    CF_WITH_CONFIG(debug),
+    CF_DEPENDS(build),
+    CF_HELP_STRING("Build in debug mode")
+) {
     CF_NOP();
 }
 
@@ -49,11 +59,15 @@ CF_TARGET(build, CF_DEPENDS(link), CF_HIDDEN) {
     if (!was_rebuilt) {
         return;
     }
-    printf("\n=========================\nBuilt using mode: %s\n=========================\n\n", CF_ENV(mode));
+    printf(
+        "\n=========================\nBuilt using mode: "
+        "%s\n=========================\n\n",
+        CF_ENV(mode)
+    );
 }
 
 CF_TARGET(link, CF_DEPENDS(compile), CF_HIDDEN) {
-    if CF_FILE_NOT_UTD(APP_PATH) {
+    if CF_FILE_NOT_UTD (APP_PATH) {
         was_rebuilt = true;
         CF_BANNER(LD_TAG "Linking...");
         char* object_files = CF_JOIN_GLOB(CF_GLOB(BUILD_DIR "/*.o"), " ");
@@ -66,12 +80,17 @@ CF_TARGET(link, CF_DEPENDS(compile), CF_HIDDEN) {
 CF_TARGET(compile, CF_HIDDEN) {
     CF_MKDIR(BUILD_DIR);
     for CF_GLOBS_EACH("src/*.c", file) {
-        char* output = CF_MAP(file, CF_MAP_EXT("o"), CF_MAP_PARENT(BUILD_DIR));
+        char* output = CF_MAP(
+            file,
+            CF_MAP_EXT("o"),
+            CF_MAP_PARENT(BUILD_DIR)
+        );
         if (CF_FILE_NOT_UTD(file) || CF_FILE_NOT_UTD(output)) {
             was_rebuilt = true;
             CF_BANNER(CC_TAG "Compiling...");
             printf(CC_TAG "  %s\n", file);
-            CF_RUNP("cc %s %s -c %s -o %s",
+            CF_RUNP(
+                "cc %s %s -c %s -o %s",
                 CF_ENV(cflags),
                 CF_ENV(includes),
                 file,

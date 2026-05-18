@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <sys/socket.h>
 #include <arpa/inet.h>
+#include <sys/socket.h>
 #include <unistd.h>
 
 #define PROT_TCP 6
@@ -41,7 +41,8 @@ void mdprev_host(uint16_t port) {
 
     char buf[512];
     int len = snprintf(
-        buf, sizeof(buf),
+        buf,
+        sizeof(buf),
         "HTTP/1.1 200 OK\r\n"
         "Server: mdprev\r\n"
         "Content-Type: text/html; charset=UTF-8\r\n"
@@ -49,7 +50,8 @@ void mdprev_host(uint16_t port) {
         "Connection: close\r\n"
         "\r\n"
         "%s",
-        strlen(body), body
+        strlen(body),
+        body
     );
 
     if (len < 0 || (size_t) len >= sizeof(buf)) {
