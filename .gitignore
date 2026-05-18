@@ -2,6 +2,7 @@
 playground/
 
 # Ignore CForge artifacts
+cforge.h
 .b
 .cforge.db
 
