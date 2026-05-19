@@ -8,9 +8,7 @@
 #include "gen/templater.h"
 
 #define MMAP_THRESHOLD (16 * 1024 * 1024)
-#define OPTS                                                                   \
-    (CMARK_OPT_GITHUB_PRE_LANG | CMARK_OPT_VALIDATE_UTF8 | CMARK_OPT_SMART |   \
-     CMARK_OPT_UNSAFE)
+#define OPTS (CMARK_OPT_VALIDATE_UTF8 | CMARK_OPT_SMART | CMARK_OPT_UNSAFE)
 
 #define LOAD_EXT(allocator, head, extension)                                   \
     cmark_syntax_extension* ext_##extension = cmark_find_syntax_extension(     \

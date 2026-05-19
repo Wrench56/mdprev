@@ -4,24 +4,13 @@
 #include "cmark-gfm.h"
 
 #include "autogen/mathjax.h"
+#include "autogen/prism_css.h"
+#include "autogen/prism_js.h"
 #include "autogen/stylesheet.h"
 
-const char HEADER[] = "<html><head><title>mdprev</title><style>" STYLESHEET_DATA
-                      "</style><script>"
-                      "window.MathJax = {"
-                      "tex: {"
-                      "inlineMath: [['\\\\(','\\\\)']],"
-                      "displayMath: [['$$','$$'],['\\\\[','\\\\]']]"
-                      "},"
-                      "options: {"
-                      "skipHtmlTags: ['script','noscript','style','textarea'],"
-                      "enableMenu: false"
-                      "},"
-                      "sre: {speech: 'none'}"
-                      "};"
-                      "</script><script>" MATHJAX_DATA "</script></head>";
+const char HEADER[] = "<html><head><title>mdprev</title><style>" STYLESHEET_DATA "</style><style>" PRISM_CSS_DATA "</style><script>window.MathJax = {tex: {inlineMath: [['\\\\(','\\\\)']],displayMath: [['$$','$$'],['\\\\[','\\\\]']]},options: {skipHtmlTags: ['script','noscript','style','textarea'],enableMenu: false},sre: {speech: 'none'}};</script><script>" MATHJAX_DATA "</script><script>" PRISM_JS_DATA "</script></head>";
 
-const char FOOTER[] = "</html>";
+const char FOOTER[] = "</body></html>";
 
 static void rewrite_math_blocks(cmark_node* root) {
     cmark_iter* iter = cmark_iter_new(root);

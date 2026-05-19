@@ -18,9 +18,15 @@
 #define MATHJAXMIN "MathJax/tex-svg.js"
 #define MATHJAXMIN_HEADER AUTOGEN_DIR "/mathjax.h"
 
+#define PRISM_JS "src/scripts/prism.js"
+#define PRISM_JS_HEADER AUTOGEN_DIR "/prism_js.h"
+#define PRISM_CSS "src/stylesheets/prism.css"
+#define PRISM_CSS_HEADER AUTOGEN_DIR "/prism_css.h"
+
 #define CC_TAG "[" CF_YELLOW "CC" CF_RESET "] "
 #define CM_TAG "[" CF_MAGENTA "CM" CF_RESET "] "
 #define MJ_TAG "[" CF_MAGENTA "MJ" CF_RESET "] "
+#define PM_TAG "[" CF_MAGENTA "PM" CF_RESET "] "
 #define GN_TAG "[" CF_BLUE "GN" CF_RESET "] "
 #define LD_TAG "[" CF_CYAN "LD" CF_RESET "] "
 #define RN_TAG "[" CF_GREEN "RN" CF_RESET "] "
@@ -126,7 +132,13 @@ static bool compile_pattern(const char* pattern) {
     return rebuilt;
 }
 
-CF_TARGET(compile, CF_DEPENDS(gencss), CF_DEPENDS(mathjax), CF_HIDDEN) {
+CF_TARGET(
+    compile,
+    CF_DEPENDS(gencss),
+    CF_DEPENDS(mathjax),
+    CF_DEPENDS(prismjs),
+    CF_HIDDEN
+) {
     CF_MKDIR(BUILD_DIR);
     was_rebuilt |= compile_pattern("src/*.c");
     was_rebuilt |= compile_pattern("src/*/*.c");
@@ -155,7 +167,11 @@ CF_TARGET(gencss, CF_HIDDEN) {
     if (CF_FILE_NOT_UTD(STYLESHEET_HEADER) || CF_FILE_NOT_UTD(stylesheet_src)) {
         CF_BANNER("%s", GN_TAG "Generating stylesheet.h");
         
-        CF_RUN("./tools/header_gen.sh STYLESHEET %s " STYLESHEET_HEADER, stylesheet_src);
+        CF_RUN(
+            "./tools/header_gen.sh STYLESHEET %s "
+            STYLESHEET_HEADER,
+            stylesheet_src
+        );
         CF_FILE_MARK_UTD(STYLESHEET_HEADER);
         CF_FILE_MARK_UTD((char*) stylesheet_src);
         recompile_templater = true;
@@ -166,9 +182,41 @@ CF_TARGET(mathjax, CF_HIDDEN) {
     if (CF_FILE_NOT_UTD(MATHJAXMIN_HEADER) || CF_FILE_NOT_UTD(MATHJAXMIN)) {
         CF_BANNER("%s", MJ_TAG "Generating mathjax.h");
 
-        CF_RUN("./tools/header_gen.sh MATHJAX %s " MATHJAXMIN_HEADER, MATHJAXMIN);
+        CF_RUN(
+            "./tools/header_gen.sh MATHJAX %s "
+            MATHJAXMIN_HEADER,
+            MATHJAXMIN
+        );
         CF_FILE_MARK_UTD(MATHJAXMIN_HEADER);
         CF_FILE_MARK_UTD(MATHJAXMIN);
+        recompile_templater = true;
+    }
+}
+
+CF_TARGET(prismjs, CF_HIDDEN) {
+    if (CF_FILE_NOT_UTD(PRISM_JS) || CF_FILE_NOT_UTD(PRISM_JS_HEADER)) {
+        CF_BANNER("%s", PM_TAG "Generating prism_js.h");
+
+        CF_RUN(
+            "./tools/header_gen.sh PRISM_JS %s "
+            PRISM_JS_HEADER,
+            PRISM_JS
+        );
+        CF_FILE_MARK_UTD(PRISM_JS_HEADER);
+        CF_FILE_MARK_UTD(PRISM_JS);
+        recompile_templater = true;
+    }
+
+    if (CF_FILE_NOT_UTD(PRISM_CSS) || CF_FILE_NOT_UTD(PRISM_CSS_HEADER)) {
+        CF_BANNER("%s", PM_TAG "Generating prism_css.h");
+
+        CF_RUN(
+            "./tools/header_gen.sh PRISM_CSS %s "
+            PRISM_CSS_HEADER,
+            PRISM_CSS
+        );
+        CF_FILE_MARK_UTD(PRISM_CSS_HEADER);
+        CF_FILE_MARK_UTD(PRISM_CSS);
         recompile_templater = true;
     }
 }
