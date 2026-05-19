@@ -10,6 +10,7 @@
 
 #define CMARK_DIR "cmark-gfm"
 #define CMARK_LIB CMARK_DIR "/build/src/libcmark-gfm.a"
+#define CMARK_EXTLIB CMARK_DIR "/build/extensions/libcmark-gfm-extensions.a"
 
 #define CC_TAG "[" CF_YELLOW "CC" CF_RESET "] "
 #define CM_TAG "[" CF_MAGENTA "CM" CF_RESET "] "
@@ -26,7 +27,7 @@ CF_CONFIG(release) {
     CF_SET_ENV(mode, "release");
 
     CF_SET_ENV(cflags, "-O2");
-    CF_SET_ENV(lflags, CMARK_LIB);
+    CF_SET_ENV(lflags, CMARK_EXTLIB " " CMARK_LIB);
     CF_SET_ENV(includes, "-Iincludes/ -I" CMARK_DIR "/src");
 }
 
@@ -34,7 +35,7 @@ CF_CONFIG(debug) {
     CF_SET_ENV(mode, "debug");
 
     CF_SET_ENV(cflags, "-g");
-    CF_SET_ENV(lflags, CMARK_LIB);
+    CF_SET_ENV(lflags, CMARK_EXTLIB " " CMARK_LIB);
     CF_SET_ENV(includes, "-Iincludes/ -I" CMARK_DIR "/src");
 }
 
