@@ -1,13 +1,78 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include "cmark-gfm.h"
 
+#include "mathjax.h"
 #include "stylesheet.h"
 
 const char HEADER[] = "<html><head><title>mdprev</title><style>" STYLESHEET_DATA
-                      "</style></head>";
+                      "</style><script>"
+                      "window.MathJax = {"
+                      "tex: {"
+                      "inlineMath: [['\\\\(','\\\\)']],"
+                      "displayMath: [['$$','$$'],['\\\\[','\\\\]']]"
+                      "},"
+                      "options: {"
+                      "skipHtmlTags: ['script','noscript','style','textarea'],"
+                      "enableMenu: false"
+                      "},"
+                      "sre: {speech: 'none'}"
+                      "};"
+                      "</script><script>" MATHJAX_DATA "</script></head>";
 
 const char FOOTER[] = "</html>";
 
+static void rewrite_math_blocks(cmark_node* root) {
+    cmark_iter* iter = cmark_iter_new(root);
+    cmark_event_type ev = cmark_iter_next(iter);
+    while (ev != CMARK_EVENT_DONE) {
+        if (ev != CMARK_EVENT_ENTER) {
+            goto next;
+        }
+
+        cmark_node* n = cmark_iter_get_node(iter);
+        if (cmark_node_get_type(n) != CMARK_NODE_CODE_BLOCK) {
+            goto next;
+        }
+
+        const char* info = cmark_node_get_fence_info(n);
+        if (!info || strcmp(info, "math") != 0) {
+            goto next;
+        }
+
+        const char* src = cmark_node_get_literal(n);
+        if (!src) {
+            goto next;
+        }
+
+        size_t len = strlen(src);
+        char* wrapped = malloc(len + 7);
+        if (!wrapped) {
+            goto next;
+        }
+
+        memcpy(wrapped, "\\[\n", 3);
+        memcpy(wrapped + 3, src, len);
+        memcpy(wrapped + 3 + len, "\\]\n", 3);
+        wrapped[6 + len] = '\0';
+
+        cmark_node* html = cmark_node_new(CMARK_NODE_HTML_BLOCK);
+        cmark_node_set_literal(html, wrapped);
+        cmark_node_replace(n, html);
+        cmark_node_free(n);
+        free(wrapped);
+
+    next:
+        ev = cmark_iter_next(iter);
+    }
+
+    cmark_iter_free(iter);
+}
+
 void templater_wrap(cmark_node* root) {
+    rewrite_math_blocks(root);
+
     cmark_node* header_node = cmark_node_new(NODE_HTML_BLOCK);
     cmark_node_set_literal(header_node, HEADER);
 
