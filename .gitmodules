@@ -1,3 +1,6 @@
 [submodule "cmark-gfm"]
 	path = cmark-gfm
 	url = https://github.com/github/cmark-gfm
+[submodule "MathJax"]
+	path = MathJax
+	url = https://github.com/mathjax/MathJax
