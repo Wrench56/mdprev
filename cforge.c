@@ -8,7 +8,11 @@
 #define BUILD_DIR "build"
 #define APP_PATH (BUILD_DIR "/" APP_NAME)
 
+#define CMARK_DIR "cmark-gfm"
+#define CMARK_LIB CMARK_DIR "/build/src/libcmark-gfm.a"
+
 #define CC_TAG "[" CF_YELLOW "CC" CF_RESET "] "
+#define CM_TAG "[" CF_MAGENTA "CM" CF_RESET "] "
 #define LD_TAG "[" CF_CYAN "LD" CF_RESET "] "
 #define RN_TAG "[" CF_GREEN "RN" CF_RESET "] "
 
@@ -22,14 +26,14 @@ CF_CONFIG(release) {
     CF_SET_ENV(mode, "release");
 
     CF_SET_ENV(cflags, "-O2");
-    CF_SET_ENV(includes, "-Iincludes/");
+    CF_SET_ENV(includes, "-Iincludes/ -I" CMARK_DIR "/src");
 }
 
 CF_CONFIG(debug) {
     CF_SET_ENV(mode, "debug");
 
     CF_SET_ENV(cflags, "-g");
-    CF_SET_ENV(includes, "-Iincludes/");
+    CF_SET_ENV(includes, "-Iincludes/ -I" CMARK_DIR "/src");
 }
 
 CF_TARGET(
@@ -66,7 +70,7 @@ CF_TARGET(build, CF_DEPENDS(link), CF_HIDDEN) {
     );
 }
 
-CF_TARGET(link, CF_DEPENDS(compile), CF_HIDDEN) {
+CF_TARGET(link, CF_DEPENDS(compile), CF_DEPENDS(cmark), CF_HIDDEN) {
     if CF_FILE_NOT_UTD (APP_PATH) {
         was_rebuilt = true;
         CF_BANNER(LD_TAG "Linking...");
@@ -109,4 +113,17 @@ CF_TARGET(compile, CF_HIDDEN) {
     CF_MKDIR(BUILD_DIR);
     was_rebuilt |= compile_pattern("src/*.c");
     was_rebuilt |= compile_pattern("src/*/*.c");
+}
+
+CF_TARGET(cmark, CF_HIDDEN) {
+    if CF_FILE_NOT_UTD (CMARK_LIB) {
+        CF_RUN(
+            "cd %s && mkdir -p build && cd build && cmake "
+            "-DCMAKE_POLICY_VERSION_MINIMUM=3.5 -Wno-dev .. && make",
+            CMARK_DIR
+        );
+        CF_RUN("strip --strip-debug %s", CMARK_LIB);
+        CF_RUN("ranlib %s", CMARK_LIB);
+        CF_FILE_MARK_UTD(CMARK_LIB);
+    }
 }
