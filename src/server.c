@@ -9,12 +9,12 @@
 
 #define PROT_TCP 6
 
-void mdprev_host(uint16_t port) {
-    int32_t sock_fd = socket(AF_INET, SOCK_STREAM, PROT_TCP);
+void mdprev_host(uint16_t port, const char* body) {
+    int32_t sock_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     struct sockaddr_in addr = {
         .sin_family = AF_INET,
         .sin_port = htons(port),
-        .sin_addr = INADDR_ANY
+        .sin_addr.s_addr = htonl(INADDR_ANY),
     };
 
     if (sock_fd == -1) {
@@ -30,37 +30,38 @@ void mdprev_host(uint16_t port) {
         return;
     }
 
-    int32_t cli_fd = accept(sock_fd, NULL, NULL);
-    if (cli_fd == -1) {
-        perror("accept()");
-        close(sock_fd);
-        return;
-    }
+    int32_t cli_fd = 0;
+    char headers[256];
+    size_t body_len = strlen(body);
+    for (;;) {
+        cli_fd = accept(sock_fd, NULL, NULL);
+        if (cli_fd == -1) {
+            perror("accept()");
+            close(sock_fd);
+            return;
+        }
 
-    const char body[] = "<h1>Hello</h1>";
+        int32_t hlen = snprintf(
+            headers,
+            sizeof(headers),
+            "HTTP/1.1 200 OK\r\n"
+            "Server: mdprev\r\n"
+            "Content-Type: text/html; charset=UTF-8\r\n"
+            "Content-Length: %zu\r\n"
+            "Connection: close\r\n"
+            "\r\n",
+            body_len
+        );
 
-    char buf[512];
-    int len = snprintf(
-        buf,
-        sizeof(buf),
-        "HTTP/1.1 200 OK\r\n"
-        "Server: mdprev\r\n"
-        "Content-Type: text/html; charset=UTF-8\r\n"
-        "Content-Length: %zu\r\n"
-        "Connection: close\r\n"
-        "\r\n"
-        "%s",
-        strlen(body),
-        body
-    );
+        if (hlen < 0 || (size_t) hlen >= sizeof(headers)) {
+            fprintf(stderr, "Error: header buffer too small!\n");
+            goto cleanup;
+        }
 
-    if (len < 0 || (size_t) len >= sizeof(buf)) {
-        fprintf(stderr, "Error: Response buffer too small!\n");
-        goto cleanup;
-    }
-
-    if (send(cli_fd, buf, (size_t) len, 0) == -1) {
-        perror("send()");
+        if (send(cli_fd, headers, (size_t) hlen, 0) < 0 ||
+            send(cli_fd, body, body_len, 0) < 0) {
+            perror("send()");
+        }
     }
 
 cleanup:

@@ -3,6 +3,6 @@
 
 #include <stdint.h>
 
-void mdprev_host(uint16_t port);
+void mdprev_host(uint16_t port, const char* body);
 
 #endif // MDPREV_SERVER_H
