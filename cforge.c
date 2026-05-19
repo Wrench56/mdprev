@@ -73,7 +73,7 @@ CF_TARGET(build, CF_DEPENDS(link), CF_HIDDEN) {
 }
 
 CF_TARGET(link, CF_DEPENDS(compile), CF_DEPENDS(cmark), CF_HIDDEN) {
-    if CF_FILE_NOT_UTD (APP_PATH) {
+    if (CF_FILE_NOT_UTD(APP_PATH) || was_rebuilt) {
         was_rebuilt = true;
         CF_BANNER(LD_TAG "Linking...");
         char* object_files = CF_JOIN_GLOB(CF_GLOB(BUILD_DIR "/*.o"), " ");
