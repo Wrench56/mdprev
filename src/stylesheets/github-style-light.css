@@ -1,4 +1,4 @@
-{
+body {
   color-scheme: light;
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
@@ -374,22 +374,22 @@ input::-webkit-inner-spin-button {
   margin-right: 0.5rem !important;
 }
 
-.markdown-body::before {
+body::before {
   display: table;
   content: "";
 }
 
-.markdown-body::after {
+body::after {
   display: table;
   clear: both;
   content: "";
 }
 
-.markdown-body>*:first-child {
+body>*:first-child {
   margin-top: 0 !important;
 }
 
-.markdown-body>*:last-child {
+body>*:last-child {
   margin-bottom: 0 !important;
 }
 
@@ -1000,46 +1000,29 @@ a:has(>p,>div,>pre,>blockquote):has(.snippet-clipboard-content,>pre):focus-visib
   outline-offset: 2px;
 }
 
-.task-list-item {
+li:has(> input[type=checkbox]) {
   list-style-type: none;
 }
 
-.task-list-item label {
+li:has(> input[type=checkbox]) label {
   font-weight: 400;
 }
 
-.task-list-item.enabled label {
-  cursor: pointer;
-}
-
-.task-list-item+.task-list-item {
+li:has(> input[type=checkbox]) + li:has(> input[type=checkbox]) {
   margin-top: 0.25rem;
 }
 
-.task-list-item .handle {
-  display: none;
-}
-
-.task-list-item-checkbox {
+li > input[type=checkbox]:first-child {
   margin: 0 .2em .25em -1.4em;
   vertical-align: middle;
 }
 
-ul:dir(rtl) .task-list-item-checkbox {
+ul:dir(rtl) li > input[type=checkbox]:first-child {
   margin: 0 -1.6em .25em .2em;
 }
 
-ol:dir(rtl) .task-list-item-checkbox {
+ol:dir(rtl) li > input[type=checkbox]:first-child {
   margin: 0 -1.6em .25em .2em;
-}
-
-.contains-task-list:hover .task-list-item-convert-container,
-.contains-task-list:focus-within .task-list-item-convert-container {
-  display: block;
-  width: auto;
-  height: 24px;
-  overflow: visible;
-  clip-path: none;
 }
 
 ::-webkit-calendar-picker-indicator {
@@ -1108,7 +1091,7 @@ ol:dir(rtl) .task-list-item-checkbox {
   color: #d1242f;
 }
 
-.markdown-body>*:first-child>.heading-element:first-child {
+body>*:first-child>:is(h1,h2,h3,h4,h5,h6):first-child {
   margin-top: 0 !important;
 }
 
