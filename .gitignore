@@ -13,8 +13,7 @@ cforge.h
 compile_commands.json
 
 # Ignore build artifacts
-includes/stylesheet.h
-includes/mathjax.h
+includes/autogen/*.h
 build/
 
 # Ignore commitlint executable

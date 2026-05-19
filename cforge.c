@@ -7,14 +7,16 @@
 #define APP_NAME "mdprev"
 #define BUILD_DIR "build"
 #define APP_PATH (BUILD_DIR "/" APP_NAME)
-#define STYLESHEET_HEADER "includes/stylesheet.h"
+#define AUTOGEN_DIR "includes/autogen"
+
+#define STYLESHEET_HEADER AUTOGEN_DIR "/stylesheet.h"
 
 #define CMARK_DIR "cmark-gfm"
 #define CMARK_LIB CMARK_DIR "/build/src/libcmark-gfm.a"
 #define CMARK_EXTLIB CMARK_DIR "/build/extensions/libcmark-gfm-extensions.a"
 
 #define MATHJAXMIN "MathJax/tex-svg.js"
-#define MATHJAXMIN_HEADER "includes/mathjax.h"
+#define MATHJAXMIN_HEADER AUTOGEN_DIR "/mathjax.h"
 
 #define CC_TAG "[" CF_YELLOW "CC" CF_RESET "] "
 #define CM_TAG "[" CF_MAGENTA "CM" CF_RESET "] "
@@ -144,6 +146,7 @@ CF_TARGET(cmark, CF_HIDDEN) {
 }
 
 CF_TARGET(gencss, CF_HIDDEN) {
+    CF_MKDIR(AUTOGEN_DIR);
     const char* stylesheet_src = CF_ENV(MDPREV_STYLESHEET);
     if (stylesheet_src == NULL) {
         stylesheet_src = "src/stylesheets/github-style-light.css";
@@ -160,7 +163,7 @@ CF_TARGET(gencss, CF_HIDDEN) {
 }
 
 CF_TARGET(mathjax, CF_HIDDEN) {
-    if CF_FILE_NOT_UTD(MATHJAXMIN) {
+    if (CF_FILE_NOT_UTD(MATHJAXMIN_HEADER) || CF_FILE_NOT_UTD(MATHJAXMIN)) {
         CF_BANNER("%s", MJ_TAG "Generating mathjax.h");
 
         CF_RUN("./tools/header_gen.sh MATHJAX %s " MATHJAXMIN_HEADER, MATHJAXMIN);

@@ -3,8 +3,8 @@
 
 #include "cmark-gfm.h"
 
-#include "mathjax.h"
-#include "stylesheet.h"
+#include "autogen/mathjax.h"
+#include "autogen/stylesheet.h"
 
 const char HEADER[] = "<html><head><title>mdprev</title><style>" STYLESHEET_DATA
                       "</style><script>"
