@@ -7,6 +7,7 @@
 #define APP_NAME "mdprev"
 #define BUILD_DIR "build"
 #define APP_PATH (BUILD_DIR "/" APP_NAME)
+#define STYLESHEET_HEADER "includes/stylesheet.h"
 
 #define CMARK_DIR "cmark-gfm"
 #define CMARK_LIB CMARK_DIR "/build/src/libcmark-gfm.a"
@@ -18,6 +19,7 @@
 #define RN_TAG "[" CF_GREEN "RN" CF_RESET "] "
 
 bool was_rebuilt = false;
+bool recompile_templater = false;
 
 #if CF_VERSION_BELOW(1, 0, 2)
 #error "CForge too old!"
@@ -88,13 +90,18 @@ static bool compile_pattern(const char* pattern) {
     bool rebuilt = false;
 
     for CF_GLOBS_EACH(pattern, file) {
+        bool force = false;
         char* output = CF_MAP(
             file,
             CF_MAP_EXT("o"),
             CF_MAP_DIRS(BUILD_DIR "/"),
         );
 
-        if (CF_FILE_NOT_UTD(file) || CF_FILE_NOT_UTD(output)) {
+        if (strcmp("src/gen/templater.c", file) == 0 && recompile_templater) {
+            force = true;
+        }
+
+        if (CF_FILE_NOT_UTD(file) || CF_FILE_NOT_UTD(output) || force) {
             rebuilt = true;
             CF_BANNER(CC_TAG "Compiling...");
             printf(CC_TAG "  %s\n", file);
@@ -112,14 +119,14 @@ static bool compile_pattern(const char* pattern) {
     return rebuilt;
 }
 
-CF_TARGET(compile, CF_HIDDEN) {
+CF_TARGET(compile, CF_DEPENDS(gencss), CF_HIDDEN) {
     CF_MKDIR(BUILD_DIR);
     was_rebuilt |= compile_pattern("src/*.c");
     was_rebuilt |= compile_pattern("src/*/*.c");
 }
 
 CF_TARGET(cmark, CF_HIDDEN) {
-    if CF_FILE_NOT_UTD (CMARK_LIB) {
+    if CF_FILE_NOT_UTD(CMARK_LIB) {
         CF_RUN(
             "cd %s && mkdir -p build && cd build && cmake "
             "-DCMAKE_POLICY_VERSION_MINIMUM=3.5 -Wno-dev .. && make",
@@ -128,5 +135,21 @@ CF_TARGET(cmark, CF_HIDDEN) {
         CF_RUN("strip --strip-debug %s", CMARK_LIB);
         CF_RUN("ranlib %s", CMARK_LIB);
         CF_FILE_MARK_UTD(CMARK_LIB);
+    }
+}
+
+CF_TARGET(gencss, CF_HIDDEN) {
+    const char* stylesheet_src = CF_ENV(MDPREV_STYLESHEET);
+    if (stylesheet_src == NULL) {
+        stylesheet_src = "src/stylesheets/github-style-light.css";
+    }
+
+    if (CF_FILE_NOT_UTD(STYLESHEET_HEADER) || CF_FILE_NOT_UTD(stylesheet_src)) {
+        CF_BANNER("%s", CC_TAG "Generating stylesheet.h");
+        
+        CF_RUN("./tools/header_gen.sh STYLESHEET %s " STYLESHEET_HEADER, stylesheet_src);
+        CF_FILE_MARK_UTD(STYLESHEET_HEADER);
+        CF_FILE_MARK_UTD((char*) stylesheet_src);
+        recompile_templater = true;
     }
 }

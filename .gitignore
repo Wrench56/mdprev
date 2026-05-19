@@ -12,7 +12,8 @@ cforge.h
 # Ignore compile_commands.json
 compile_commands.json
 
-# Ignore build/ directory
+# Ignore build artifacts
+includes/stylesheet.h
 build/
 
 # Ignore commitlint executable
