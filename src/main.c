@@ -2,14 +2,16 @@
 #include <stdlib.h>
 
 #include "gen/gen.h"
+#include "globals.h"
 #include "server.h"
 
 int main(int argc, char* argv[]) {
     (void) argc;
     (void) argv;
 
-    const char* html = md_to_html(argv[1]);
-    mdprev_host(12345, html);
-    free((char*) html);
+    GENPATH = argv[1];
+    md_to_html();
+    mdprev_host(12345, GENBODY);
+    free((char*) GENBODY);
     return 0;
 }

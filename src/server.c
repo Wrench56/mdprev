@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "globals.h"
 #include "threadpool.h"
 
 #define PROT_TCP 6
@@ -81,7 +82,7 @@ cleanup:
     close(cli_fd);
 }
 
-void mdprev_host(uint16_t port, const char* body) {
+void mdprev_host(uint16_t port) {
     signal(SIGPIPE, SIG_IGN);
 
     int32_t sock_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -121,7 +122,7 @@ void mdprev_host(uint16_t port, const char* body) {
         }
 
         data->cli_fd = cli_fd;
-        data->body = body;
+        data->body = GENBODY;
         assign_worker(conn_handler, data);
     }
 

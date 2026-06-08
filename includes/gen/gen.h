@@ -1,6 +1,6 @@
 #ifndef GEN_GEN_H
 #define GEN_GEN_H
 
-char* md_to_html(const char* mdpath);
+void md_to_html(void);
 
 #endif /* GEN_GEN_H */

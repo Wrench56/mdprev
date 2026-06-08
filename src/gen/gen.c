@@ -7,6 +7,8 @@
 #include "gen/loader.h"
 #include "gen/templater.h"
 
+#include "globals.h"
+
 #define MMAP_THRESHOLD (16 * 1024 * 1024)
 #define OPTS (CMARK_OPT_VALIDATE_UTF8 | CMARK_OPT_SMART | CMARK_OPT_UNSAFE)
 
@@ -44,13 +46,13 @@ static void free_extensions(cmark_llist* head) {
     cmark_llist_free_full(allocator, head, NULL);
 }
 
-char* md_to_html(const char* mdpath) {
+void md_to_html(void) {
     file_buffer_t file = { 0 };
-    if (!loader_load(mdpath, MMAP_THRESHOLD, &file)) {
+    if (!loader_load(GENPATH, MMAP_THRESHOLD, &file)) {
         fprintf(
             stderr,
             "Error: could not load markdown file with path \"%s\"\n",
-            mdpath
+            GENPATH
         );
     }
 
@@ -74,5 +76,6 @@ char* md_to_html(const char* mdpath) {
 
     free_extensions(ext_head);
     loader_free(&file);
-    return html;
+
+    GENBODY = html;
 }
