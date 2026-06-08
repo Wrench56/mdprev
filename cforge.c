@@ -3,6 +3,7 @@
 #include "cforge.h"
 
 #include <stdio.h>
+#include <strings.h>
 
 #define APP_NAME "mdprev"
 #define BUILD_DIR "build"
@@ -30,6 +31,7 @@
 #define GN_TAG "[" CF_BLUE "GN" CF_RESET "] "
 #define LD_TAG "[" CF_CYAN "LD" CF_RESET "] "
 #define RN_TAG "[" CF_GREEN "RN" CF_RESET "] "
+#define IN_TAG "[" CF_RED "IN" CF_RESET "] "
 
 bool was_rebuilt = false;
 bool recompile_templater = false;
@@ -219,4 +221,17 @@ CF_TARGET(prismjs, CF_HIDDEN) {
         CF_FILE_MARK_UTD(PRISM_CSS);
         recompile_templater = true;
     }
+}
+
+CF_TARGET(install, CF_DEPENDS(release), CF_HELP_STRING("Install binary")) {
+    printf(IN_TAG "Installing...\n");
+
+#if defined(__FreeBSD__)
+    CF_CP(APP_PATH, "/usr/local/bin/" APP_NAME);
+#elif defined(__linux__) || defined(linux)
+    CF_CP(APP_PATH, "/usr/bin/" APP_NAME);
+#else
+    fprintf(stderr, "Error: Unknown platform!\n");
+    exit(1);
+#endif
 }
