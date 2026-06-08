@@ -2,12 +2,62 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "threadpool.h"
+
 #define PROT_TCP 6
+
+typedef struct {
+    int32_t cli_fd;
+    const char* body;
+} conn_handler_data_t;
+
+static void conn_handler(void* payload) {
+    conn_handler_data_t* data = (conn_handler_data_t*) payload;
+    int32_t cli_fd = data->cli_fd;
+
+    char recv_buf[8196];
+    char headers[256];
+    size_t body_len = strlen(data->body);
+
+    read(cli_fd, recv_buf, sizeof(recv_buf));
+    if (strncmp("GET / ", recv_buf, 6) == 0) {
+        int32_t hlen = snprintf(
+            headers,
+            sizeof(headers),
+            "HTTP/1.1 200 OK\r\n"
+            "Server: mdprev\r\n"
+            "Content-Type: text/html; charset=UTF-8\r\n"
+            "Content-Length: %zu\r\n"
+            "Connection: close\r\n"
+            "\r\n",
+            body_len
+        );
+
+        if (hlen < 0 || (size_t) hlen >= sizeof(headers)) {
+            fprintf(stderr, "Error: header buffer too small!\n");
+            goto cleanup;
+        }
+
+        if (write(cli_fd, headers, (size_t) hlen) < 0 ||
+            write(cli_fd, data->body, body_len) < 0) {
+            perror("send()");
+        }
+    } else {
+        fprintf(stderr, "Warning: Unknown endpoint");
+    }
+
+    free(data);
+    return;
+
+cleanup:
+    close(cli_fd);
+}
 
 void mdprev_host(uint16_t port, const char* body) {
     int32_t sock_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -30,10 +80,15 @@ void mdprev_host(uint16_t port, const char* body) {
         return;
     }
 
+    conn_handler_data_t* data = NULL;
     int32_t cli_fd = 0;
-    char headers[256];
-    size_t body_len = strlen(body);
     for (;;) {
+        data = malloc(sizeof(conn_handler_data_t));
+        if (data == NULL) {
+            perror("malloc()");
+            exit(1);
+        }
+            
         cli_fd = accept(sock_fd, NULL, NULL);
         if (cli_fd == -1) {
             perror("accept()");
@@ -41,30 +96,11 @@ void mdprev_host(uint16_t port, const char* body) {
             return;
         }
 
-        int32_t hlen = snprintf(
-            headers,
-            sizeof(headers),
-            "HTTP/1.1 200 OK\r\n"
-            "Server: mdprev\r\n"
-            "Content-Type: text/html; charset=UTF-8\r\n"
-            "Content-Length: %zu\r\n"
-            "Connection: close\r\n"
-            "\r\n",
-            body_len
-        );
-
-        if (hlen < 0 || (size_t) hlen >= sizeof(headers)) {
-            fprintf(stderr, "Error: header buffer too small!\n");
-            goto cleanup;
-        }
-
-        if (send(cli_fd, headers, (size_t) hlen, 0) < 0 ||
-            send(cli_fd, body, body_len, 0) < 0) {
-            perror("send()");
-        }
+        data->cli_fd = cli_fd;
+        data->body = body;
+        assign_worker(conn_handler, data);
     }
 
 cleanup:
-    close(cli_fd);
     close(sock_fd);
 }
