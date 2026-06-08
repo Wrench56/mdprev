@@ -51,9 +51,12 @@ const char
                "};"
                "</script><script>" MATHJAX_DATA
                "</script><script>" PRISM_JS_DATA "</script>"
-               "<script>const events = new EventSource(\"/event\");"
-               "events.addEventListener(\"reload\", () => {location.reload();});"
-               "</script>"
+               "<script>(()=>{let e=window.__MDPREV_EVENTS__;e&&e.close();e=new "
+               "EventSource('/event');window.__MDPREV_EVENTS__=e;const "
+               "c=()=>{window.__MDPREV_EVENTS__&&(window.__MDPREV_EVENTS__.close(),"
+               "window.__MDPREV_EVENTS__=null)};e.addEventListener('reload',()=>{c(),"
+               "location.reload()});addEventListener('pagehide',c);addEventListener('"
+               "beforeunload',c);addEventListener('unload',c)})();</script>"
                "<link rel=\"icon\" href=\"data:image/png;base64,iVBORw0KGgo=\"></head>";
 
 const char FOOTER[] = "</body></html>";
