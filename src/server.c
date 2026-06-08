@@ -6,10 +6,14 @@
 #include <string.h>
 
 #include <arpa/inet.h>
+#include <errno.h>
+#include <poll.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "gen/gen.h"
 #include "globals.h"
+#include "notify/inotify.h"
 #include "threadpool.h"
 
 #define PROT_TCP 6
@@ -85,6 +89,8 @@ cleanup:
 void mdprev_host(uint16_t port) {
     signal(SIGPIPE, SIG_IGN);
 
+    md_to_html();
+
     int32_t sock_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     struct sockaddr_in addr = {
         .sin_family = AF_INET,
@@ -105,27 +111,54 @@ void mdprev_host(uint16_t port) {
         return;
     }
 
+    struct pollfd fds[2] = {
+        {
+            .fd = sock_fd,
+            .events = POLLIN,
+        },
+        { .fd = track(), .events = POLLIN },
+    };
+
     conn_handler_data_t* data = NULL;
     int32_t cli_fd = 0;
     for (;;) {
+        /* Pre-allocate data struct for new connections */
         data = malloc(sizeof(conn_handler_data_t));
         if (data == NULL) {
             perror("malloc()");
             exit(1);
         }
 
-        cli_fd = accept(sock_fd, NULL, NULL);
-        if (cli_fd == -1) {
-            perror("accept()");
-            close(sock_fd);
-            return;
+        int32_t rc = poll(fds, 2, -1);
+        if (rc == -1) {
+            if (errno == EINTR) {
+                continue;
+            }
+
+            perror("poll()");
+            goto cleanup;
         }
 
-        data->cli_fd = cli_fd;
-        data->body = GENBODY;
-        assign_worker(conn_handler, data);
+        if (fds[1].revents & POLLIN) {
+            md_to_html();
+            // TODO: Signal EventSource threads
+        }
+
+        if (fds[0].revents & POLLIN) {
+            cli_fd = accept(sock_fd, NULL, NULL);
+            if (cli_fd == -1) {
+                perror("accept()");
+                close(sock_fd);
+                return;
+            }
+
+            data->cli_fd = cli_fd;
+            data->body = GENBODY;
+            assign_worker(conn_handler, data);
+        }
     }
 
 cleanup:
     close(sock_fd);
+    untrack();
 }

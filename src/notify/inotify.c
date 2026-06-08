@@ -10,7 +10,7 @@
 static int32_t ifd = -1;
 static int32_t wfd = -1;
 
-void track(void) {
+int32_t track(void) {
     ifd = inotify_init();
     if (ifd == -1) {
         perror("inotify_init()");
@@ -21,6 +21,8 @@ void track(void) {
     if (wfd == -1) {
         perror("inotify_add_watch()");
     }
+
+    return ifd;
 }
 
 void untrack(void) {
