@@ -28,11 +28,28 @@ static const alert_type_t ALERT_TYPES[] = {
 const char
     HEADER[] = "<html><head><title>mdprev</title><style>" STYLESHEET_DATA
                "</style><style>" PRISM_CSS_DATA
-               "</style><script>window.MathJax = {tex: {inlineMath: "
-               "[['\\\\(','\\\\)']],displayMath: "
-               "[['$$','$$'],['\\\\[','\\\\]']]},options: {skipHtmlTags: "
-               "['script','noscript','style','textarea'],enableMenu: "
-               "false},sre: {speech: 'none'}};</script><script>" MATHJAX_DATA
+               "</style><script>"
+               "window.MathJax={"
+                 "tex:{"
+                   "inlineMath:[['\\\\(','\\\\)']],"
+                   "displayMath:[['$$','$$'],['\\\\[','\\\\]']]"
+                 "},"
+                 "options:{"
+                   "skipHtmlTags:['script','noscript','style','textarea'],"
+                   "enableMenu:false,"
+                   "enableSpeech:false,"
+                   "enableBraille:false,"
+                   "enableExplorer:false,"
+                   "enableAssistiveMml:false,"
+                   "menuOptions:{settings:{"
+                     "speech:false,"
+                     "enrich:false,"
+                     "explorer:false,"
+                     "assistiveMml:false"
+                   "}}"
+                 "}"
+               "};"
+               "</script><script>" MATHJAX_DATA
                "</script><script>" PRISM_JS_DATA "</script></head>";
 
 const char FOOTER[] = "</body></html>";
