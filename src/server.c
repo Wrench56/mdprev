@@ -1,5 +1,6 @@
 #include <stdint.h>
 
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -65,13 +66,11 @@ static void conn_handler(void* payload) {
 
         for (;;) {
             const char* heartbeat = ": ping\n\n";
-
             if (write(cli_fd, heartbeat, strlen(heartbeat)) < 0) {
-                perror("write()");
                 break;
             }
 
-            sleep(10);
+            sleep(1);
         }
     } else {
         fprintf(stderr, "Warning: Unknown endpoint");
@@ -83,6 +82,8 @@ cleanup:
 }
 
 void mdprev_host(uint16_t port, const char* body) {
+    signal(SIGPIPE, SIG_IGN);
+
     int32_t sock_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     struct sockaddr_in addr = {
         .sin_family = AF_INET,
