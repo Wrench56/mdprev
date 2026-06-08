@@ -50,7 +50,8 @@ const char
                  "}"
                "};"
                "</script><script>" MATHJAX_DATA
-               "</script><script>" PRISM_JS_DATA "</script></head>";
+               "</script><script>" PRISM_JS_DATA "</script>"
+               "<link rel=\"icon\" href=\"data:image/png;base64,iVBORw0KGgo=\"></head>";
 
 const char FOOTER[] = "</body></html>";
 
