@@ -123,10 +123,12 @@ void mdprev_host(uint16_t port) {
     int32_t cli_fd = 0;
     for (;;) {
         /* Pre-allocate data struct for new connections */
-        data = malloc(sizeof(conn_handler_data_t));
         if (data == NULL) {
-            perror("malloc()");
-            exit(1);
+            data = malloc(sizeof(conn_handler_data_t));
+            if (data == NULL) {
+                perror("malloc()");
+                exit(1);
+            }
         }
 
         int32_t rc = poll(fds, 2, -1);
@@ -155,6 +157,7 @@ void mdprev_host(uint16_t port) {
             data->cli_fd = cli_fd;
             data->body = GENBODY;
             assign_worker(conn_handler, data);
+            data = NULL;
         }
     }
 
