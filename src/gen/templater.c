@@ -51,6 +51,9 @@ const char
                "};"
                "</script><script>" MATHJAX_DATA
                "</script><script>" PRISM_JS_DATA "</script>"
+               "<script>const events = new EventSource(\"/event\");"
+               "events.addEventListener(\"reload\", () => {location.reload();});"
+               "</script>"
                "<link rel=\"icon\" href=\"data:image/png;base64,iVBORw0KGgo=\"></head>";
 
 const char FOOTER[] = "</body></html>";

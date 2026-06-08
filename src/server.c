@@ -1,8 +1,8 @@
 #include <stdint.h>
 
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -48,14 +48,37 @@ static void conn_handler(void* payload) {
             write(cli_fd, data->body, body_len) < 0) {
             perror("send()");
         }
+    } else if (strncmp("GET /event ", recv_buf, 11) == 0) {
+        const char* sse_headers = "HTTP/1.1 200 OK\r\n"
+                                  "Server: mdprev\r\n"
+                                  "Content-Type: text/event-stream\r\n"
+                                  "Cache-Control: no-cache\r\n"
+                                  "Connection: keep-alive\r\n"
+                                  "\r\n";
+
+        if (write(cli_fd, sse_headers, strlen(sse_headers)) < 0) {
+            perror("write()");
+            goto cleanup;
+        }
+
+        printf("Event handler connected!\n");
+
+        for (;;) {
+            const char* heartbeat = ": ping\n\n";
+
+            if (write(cli_fd, heartbeat, strlen(heartbeat)) < 0) {
+                perror("write()");
+                break;
+            }
+
+            sleep(10);
+        }
     } else {
         fprintf(stderr, "Warning: Unknown endpoint");
     }
 
-    free(data);
-    return;
-
 cleanup:
+    free(data);
     close(cli_fd);
 }
 
@@ -88,7 +111,7 @@ void mdprev_host(uint16_t port, const char* body) {
             perror("malloc()");
             exit(1);
         }
-            
+
         cli_fd = accept(sock_fd, NULL, NULL);
         if (cli_fd == -1) {
             perror("accept()");
