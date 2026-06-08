@@ -23,6 +23,7 @@ rules:
       - license
       - server
       - gen
+      - notify
   subject-empty:
     level: error
   type:
