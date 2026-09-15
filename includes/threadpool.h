@@ -4,7 +4,7 @@
 #include <pthread.h>
 #include <stdint.h>
 
-#define THREADPOOL_SZ 8
+#define THREADPOOL_SZ 3
 
 typedef enum {
     UNINIT = 0,
