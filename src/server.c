@@ -275,4 +275,5 @@ void mdprev_host(uint16_t port) {
 cleanup:
     close(sock_fd);
     untrack();
+    free(data);
 }
